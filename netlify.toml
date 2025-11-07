@@ -1,0 +1,66 @@
+# Netlify Configuration for Full Stack Deployment
+# This file configures both frontend and backend deployment
+
+[build]
+  # Base directory is root, but we'll build client separately
+  base = "."
+  publish = "client/dist"
+  # Install server dependencies (for Netlify Functions) and build client
+  # Also install function dependencies
+  command = "cd server && npm install && cd ../netlify/functions && npm install && cd ../../client && npm install && npm run build"
+
+# Install dependencies for both client and server
+[build.environment]
+  NODE_VERSION = "18"
+
+# Netlify Functions configuration
+[functions]
+  # Functions directory
+  directory = "netlify/functions"
+  # Node.js version for functions
+  node_bundler = "esbuild"
+
+# Plugin to install function dependencies automatically
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
+# API proxy - route all /api/* requests to Netlify Functions
+# The :splat captures everything after /api/ and passes it to the function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+# SPA routing - all other routes go to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# CORS headers for API calls
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept"
+    Access-Control-Max-Age = "86400"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+

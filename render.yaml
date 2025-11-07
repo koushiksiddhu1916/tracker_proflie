@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: coding-growth-lens-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: ""
+    routes:
+      - type: rewrite
+        source: /api/(.*)
+        destination: https://coding-growth-lens-backend-03jo.onrender.com/api/$1
+  - type: web
+    name: coding-growth-lens-backend
+    env: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 10000
+      - key: CLIENT_ORIGIN
+        value: https://coding-growth-lens-5h0x9ea7q-venkata-reddys-projects-894c929d.vercel.app
+      - key: MONGODB_URI
+        value: mongodb+srv://sunnyvenkata450_db_user:Z44UbVgTXye1vEtT@cluster0.z8xpfnh.mongodb.net/coding-growth-lens?retryWrites=true&w=majority&appName=Cluster0
+      - key: MONGODB_DB
+        value: coding-growth-lens
+      - key: JWT_SECRET
+        value: ca39527954c7e8903dcbf096ca796756226f16fa046c3cfd48a0cfebfc7ac81786215d97fe91f9478a5f462ca672eed71ae44efe6efdfa933c1994876843235d
+      - key: JWT_EXPIRES_IN
+        value: 7d
